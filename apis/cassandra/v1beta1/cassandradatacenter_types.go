@@ -126,7 +126,8 @@ type CassandraDatacenterSpec struct {
 	// Config for the Management API certificates
 	ManagementApiAuth ManagementApiAuthConfig `json:"managementApiAuth,omitempty"`
 
-	//NodeAffinityLabels to pin the Datacenter, using node affinity
+	//NodeAffinityLabels to pin the Datacenter, using node affinity. Note: this field is ignored
+	// if PodTemplateSpec.Spec.Affinity.NodeAffinity is provided directly.
 	NodeAffinityLabels map[string]string `json:"nodeAffinityLabels,omitempty"`
 
 	// Kubernetes resource requests and limits, per pod
@@ -172,8 +173,10 @@ type CassandraDatacenterSpec struct {
 	CanaryUpgradeCount int32 `json:"canaryUpgradeCount,omitempty"`
 
 	// Turning this option on allows multiple server pods to be created on a k8s worker node.
-	// By default the operator creates just one server pod per k8s worker node using k8s
+	// By default, the operator creates just one server pod per k8s worker node using k8s
 	// podAntiAffinity and requiredDuringSchedulingIgnoredDuringExecution.
+	// Note: this field is ignored if PodTemplateSpec.Spec.Affinity.PodAntiAffinity is provided
+	// directly.
 	AllowMultipleNodesPerWorker bool `json:"allowMultipleNodesPerWorker,omitempty"`
 
 	// This secret defines the username and password for the Cassandra server superuser.

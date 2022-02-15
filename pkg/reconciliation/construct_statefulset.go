@@ -115,11 +115,6 @@ func newStatefulSetForCassandraDatacenter(
 
 	var volumeClaimTemplates []corev1.PersistentVolumeClaim
 
-	nodeAffinityLabels, nodeAffinityLabelsConfigurationError := rackNodeAffinitylabels(dc, rackName)
-	if nodeAffinityLabelsConfigurationError != nil {
-		return nil, nodeAffinityLabelsConfigurationError
-	}
-
 	// Add storage
 	if dc.Spec.StorageConfig.CassandraDataVolumeClaimSpec == nil {
 		err := fmt.Errorf("StorageConfig.cassandraDataVolumeClaimSpec is required")
@@ -148,7 +143,7 @@ func newStatefulSetForCassandraDatacenter(
 
 	nsName := newNamespacedNameForStatefulSet(dc, rackName)
 
-	template, err := buildPodTemplateSpec(dc, nodeAffinityLabels, rackName)
+	template, err := buildPodTemplateSpec(dc, rackName)
 	if err != nil {
 		return nil, err
 	}

@@ -540,8 +540,7 @@ func buildContainers(dc *api.CassandraDatacenter, baseTemplate *corev1.PodTempla
 	return nil
 }
 
-func buildPodTemplateSpec(dc *api.CassandraDatacenter, nodeAffinityLabels map[string]string,
-	rackName string) (*corev1.PodTemplateSpec, error) {
+func buildPodTemplateSpec(dc *api.CassandraDatacenter, rackName string) (*corev1.PodTemplateSpec, error) {
 
 	baseTemplate := dc.Spec.PodTemplateSpec.DeepCopy()
 
@@ -608,10 +607,19 @@ func buildPodTemplateSpec(dc *api.CassandraDatacenter, nodeAffinityLabels map[st
 
 	// Affinity
 
-	affinity := &corev1.Affinity{}
-	affinity.NodeAffinity = calculateNodeAffinity(nodeAffinityLabels)
-	affinity.PodAntiAffinity = calculatePodAntiAffinity(dc.Spec.AllowMultipleNodesPerWorker)
-	baseTemplate.Spec.Affinity = affinity
+	if baseTemplate.Spec.Affinity == nil {
+		baseTemplate.Spec.Affinity = &corev1.Affinity{}
+	}
+	if baseTemplate.Spec.Affinity.NodeAffinity == nil {
+		nodeAffinityLabels, err := rackNodeAffinitylabels(dc, rackName)
+		if err != nil {
+			return nil, err
+		}
+		baseTemplate.Spec.Affinity.NodeAffinity = calculateNodeAffinity(nodeAffinityLabels)
+	}
+	if baseTemplate.Spec.Affinity.PodAntiAffinity == nil {
+		baseTemplate.Spec.Affinity.PodAntiAffinity = calculatePodAntiAffinity(dc.Spec.AllowMultipleNodesPerWorker)
+	}
 
 	// Tolerations
 	baseTemplate.Spec.Tolerations = dc.Spec.Tolerations
